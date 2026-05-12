@@ -1,0 +1,6 @@
+vpc_id           = "vpc-065f9ba51d8412c02"
+subnet_id        = "subnet-0f7bce5279fa708d0"
+key_name         = "cs312-key"
+ecr_image_uri    = "232259924361.dkr.ecr.us-east-1.amazonaws.com/minecraft-server:mc-1.21.4-build1"
+s3_backup_bucket = "minecraft-backups-rosshenderson"
+student_id       = "henderos"
