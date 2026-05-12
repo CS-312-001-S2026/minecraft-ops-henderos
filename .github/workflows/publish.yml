@@ -38,15 +38,16 @@ jobs:
 
       - name: Pull upstream Minecraft image
         run: |
-          docker pull itzg/minecraft-server:java21-${{ env.MINECRAFT_VERSION }}
+          docker pull itzg/minecraft-server:java21
 
       - name: Smoke test — verify server initializes without errors
         run: |
           docker run -d \
             --name mc-smoke \
             -e EULA=TRUE \
+            -e VERSION=${{ env.MINECRAFT_VERSION }} \
             -e MEMORY=1G \
-            itzg/minecraft-server:java21-${{ env.MINECRAFT_VERSION }}
+            itzg/minecraft-server:java21
 
           echo "Waiting for server to report Done (up to 120 s)..."
           for i in $(seq 1 12); do
@@ -70,8 +71,8 @@ jobs:
           IMAGE="${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}"
           TAG="${{ steps.tag.outputs.image_tag }}"
 
-          docker tag itzg/minecraft-server:java21-${{ env.MINECRAFT_VERSION }} "${IMAGE}:${TAG}"
-          docker tag itzg/minecraft-server:java21-${{ env.MINECRAFT_VERSION }} "${IMAGE}:latest"
+          docker tag itzg/minecraft-server:java21 "${IMAGE}:${TAG}"
+          docker tag itzg/minecraft-server:java21 "${IMAGE}:latest"
 
           docker push "${IMAGE}:${TAG}"
           docker push "${IMAGE}:latest"
