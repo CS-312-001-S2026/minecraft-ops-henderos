@@ -115,6 +115,7 @@
         -p 25565:25565
         -v {{ minecraft_data_dir }}:/data
         -e EULA=TRUE
+        -e VERSION=1.21.4
         -e "MOTD=Minecraft Server | {{ student_id }}"
         -e MEMORY=2G
         {{ ecr_image_uri }}
