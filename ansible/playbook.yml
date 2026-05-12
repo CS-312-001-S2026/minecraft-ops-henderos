@@ -11,17 +11,26 @@
   tasks:
     # ── Prerequisites ────────────────────────────────────────────────────────────
 
-    - name: Install Docker and AWS CLI
+    - name: Install Docker and unzip
       ansible.builtin.dnf:
         name:
           - docker
-          - awscli
+          - unzip
         state: present
 
-    - name: Install Python docker SDK (required for docker_container module)
-      ansible.builtin.pip:
-        name: docker
-        state: present
+    - name: Install AWS CLI v2 (official installer, self-contained)
+      ansible.builtin.shell: |
+        if aws --version 2>/dev/null | grep -q "aws-cli/2"; then
+          echo "ALREADY_INSTALLED"
+        else
+          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+          unzip -q /tmp/awscliv2.zip -d /tmp/
+          /tmp/aws/install
+          rm -rf /tmp/aws /tmp/awscliv2.zip
+          echo "INSTALLED"
+        fi
+      register: awscli_install
+      changed_when: "'INSTALLED' in awscli_install.stdout"
 
     - name: Enable and start Docker daemon
       ansible.builtin.service:
@@ -74,28 +83,41 @@
       changed_when: false
 
     - name: Pull pinned Minecraft image from ECR
-      community.docker.docker_image:
-        name: "{{ ecr_image_uri }}"
-        source: pull
-        force_source: true
+      ansible.builtin.command:
+        cmd: docker pull {{ ecr_image_uri }}
+      register: pull_result
+      changed_when: "'Status: Downloaded newer image' in pull_result.stdout or 'newer' in pull_result.stdout"
 
     # ── Container lifecycle ──────────────────────────────────────────────────────
 
-    - name: Start Minecraft container (idempotent — recreates only if config changed)
-      community.docker.docker_container:
-        name: "{{ container_name }}"
-        image: "{{ ecr_image_uri }}"
-        state: started
-        restart_policy: unless-stopped
-        published_ports:
-          - "25565:25565"
-        volumes:
-          - "{{ minecraft_data_dir }}:/data"
-        env:
-          EULA: "TRUE"
-          MOTD: "Minecraft Server | {{ student_id }}"
-          MEMORY: "2G"
-          JVM_OPTS: "-Xmx2G -Xms1G"
+    - name: Check if Minecraft container exists
+      ansible.builtin.shell: |
+        docker inspect --format='{{ "{{" }}.State.Running{{ "}}" }}' {{ container_name }} 2>/dev/null || echo "MISSING"
+      register: container_state
+      changed_when: false
+
+    - name: Stop existing container if running
+      ansible.builtin.command: docker stop {{ container_name }}
+      when: container_state.stdout | trim == "true"
+      changed_when: true
+
+    - name: Remove existing container if present
+      ansible.builtin.command: docker rm {{ container_name }}
+      when: container_state.stdout | trim != "MISSING"
+      changed_when: true
+      failed_when: false
+
+    - name: Start Minecraft container
+      ansible.builtin.command: >
+        docker run -d
+        --name {{ container_name }}
+        --restart unless-stopped
+        -p 25565:25565
+        -v {{ minecraft_data_dir }}:/data
+        -e EULA=TRUE
+        -e "MOTD=Minecraft Server | {{ student_id }}"
+        -e MEMORY=2G
+        {{ ecr_image_uri }}
 
     # ── Smoke check ──────────────────────────────────────────────────────────────
 
