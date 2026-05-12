@@ -111,16 +111,7 @@ resource "null_resource" "ansible_provision" {
   }
 
   provisioner "local-exec" {
-    command = <<-EOT
-      sleep 60 && \
-      ansible-playbook \
-        -i '${aws_instance.minecraft.public_ip},' \
-        --private-key ${var.ssh_private_key_path} \
-        -u ec2-user \
-        -e "ecr_image_uri=${var.ecr_image_uri}" \
-        -e "s3_backup_bucket=${var.s3_backup_bucket}" \
-        -e "student_id=${var.student_id}" \
-        ../ansible/playbook.yml
-    EOT
+    interpreter = ["wsl", "--", "bash", "-c"]
+    command     = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${aws_instance.minecraft.public_ip},' --private-key ~/.ssh/cs312-key.pem -u ec2-user --ssh-extra-args='-o StrictHostKeyChecking=no' -e 'ecr_image_uri=${var.ecr_image_uri}' -e 's3_backup_bucket=${var.s3_backup_bucket}' -e 'student_id=${var.student_id}' /mnt/c/Users/Ross/ops3-minecraft/ansible/playbook.yml"
   }
 }
