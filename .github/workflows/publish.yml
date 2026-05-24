@@ -1,0 +1,81 @@
+name: Publish Minecraft Image to ECR
+
+on:
+  push:
+    tags:
+      - "mc-*"
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: 232259924361.dkr.ecr.us-east-1.amazonaws.com
+  ECR_REPOSITORY: minecraft-server
+  MINECRAFT_VERSION: "1.21.4"
+
+jobs:
+  publish:
+    name: Smoke-test and publish image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Derive image tag from git tag
+        id: tag
+        run: echo "image_tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Pull upstream Minecraft image
+        run: |
+          docker pull itzg/minecraft-server:java21
+
+      - name: Smoke test — verify server initializes without errors
+        run: |
+          docker run -d \
+            --name mc-smoke \
+            -e EULA=TRUE \
+            -e VERSION=${{ env.MINECRAFT_VERSION }} \
+            -e MEMORY=1G \
+            itzg/minecraft-server:java21
+
+          echo "Waiting for server to report Done (up to 120 s)..."
+          for i in $(seq 1 12); do
+            sleep 10
+            if docker logs mc-smoke 2>&1 | grep -q "Done"; then
+              echo "Server started successfully"
+              docker stop mc-smoke
+              docker rm mc-smoke
+              exit 0
+            fi
+            echo "  attempt $i/12 — not ready yet"
+          done
+
+          echo "ERROR: server did not start within 120 seconds"
+          docker logs mc-smoke
+          docker rm -f mc-smoke
+          exit 1
+
+      - name: Tag and push to ECR
+        run: |
+          IMAGE="${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}"
+          TAG="${{ steps.tag.outputs.image_tag }}"
+
+          docker tag itzg/minecraft-server:java21 "${IMAGE}:${TAG}"
+          docker tag itzg/minecraft-server:java21 "${IMAGE}:latest"
+
+          docker push "${IMAGE}:${TAG}"
+          docker push "${IMAGE}:latest"
+
+          echo "Pushed ${IMAGE}:${TAG}"
+          echo "Pushed ${IMAGE}:latest"

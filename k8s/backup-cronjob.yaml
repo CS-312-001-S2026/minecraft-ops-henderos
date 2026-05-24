@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: minecraft-backup
+  namespace: minecraft
+spec:
+  # Run every hour. Adjust to "0 */6 * * *" to reduce S3 PUT costs.
+  schedule: "0 * * * *"
+  # Prevent overlapping backup jobs if a previous run is still in progress.
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: amazon/aws-cli:2.15.0
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  tar -czf /tmp/world-backup.tar.gz -C /data world
+                  aws s3 cp /tmp/world-backup.tar.gz \
+                    s3://minecraft-backups-rosshenderson/minecraft/world-backup.tar.gz \
+                    --region us-east-1
+                  rm -f /tmp/world-backup.tar.gz
+                  echo "Backup complete at $(date)"
+              volumeMounts:
+                - name: world-data
+                  mountPath: /data
+                  readOnly: true
+          volumes:
+            - name: world-data
+              persistentVolumeClaim:
+                claimName: minecraft-world

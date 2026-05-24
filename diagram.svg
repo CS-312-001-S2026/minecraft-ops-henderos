@@ -1,0 +1,177 @@
+<svg width="980" height="560" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#5F6368"/>
+    </marker>
+    <marker id="a-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#1A73E8"/>
+    </marker>
+    <marker id="a-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#E37400"/>
+    </marker>
+    <marker id="a-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#137333"/>
+    </marker>
+    <marker id="a-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#C5221F"/>
+    </marker>
+    <marker id="a-teal" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#007B5E"/>
+    </marker>
+    <marker id="a-purple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#7B1FA2"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="980" height="560" fill="#F8F9FA"/>
+
+  <!-- ═══════════════════════════════════════════
+       EC2 INSTANCE  (big center box)
+  ════════════════════════════════════════════ -->
+  <rect x="210" y="40" width="530" height="500" rx="12" fill="white" stroke="#DADCE0" stroke-width="2"/>
+  <!-- header -->
+  <rect x="210" y="40" width="530" height="36" rx="12" fill="#ECEFF1"/>
+  <rect x="210" y="64"  width="530" height="12" fill="#ECEFF1"/>
+  <text x="226" y="63" font-size="13" font-weight="bold" fill="#37474F">EC2: t3.medium · Amazon Linux 2023 · IAM: LabInstanceProfile</text>
+
+  <!-- k3s inner box -->
+  <rect x="228" y="88" width="494" height="438" rx="8" fill="#EEF2FF" stroke="#5C6BC0" stroke-width="1.5"/>
+  <rect x="228" y="88" width="494" height="28" rx="8" fill="#5C6BC0"/>
+  <rect x="228" y="104" width="494" height="12" fill="#5C6BC0"/>
+  <text x="244" y="107" font-size="12" font-weight="bold" fill="white">k3s v1.29.4 · single-node · Namespace: minecraft</text>
+
+  <!-- ── Service ── -->
+  <rect x="246" y="128" width="458" height="54" rx="7" fill="white" stroke="#1A73E8" stroke-width="1.5"/>
+  <rect x="246" y="128" width="458" height="24" rx="7" fill="#1A73E8"/>
+  <rect x="246" y="140" width="458" height="12" fill="#1A73E8"/>
+  <text x="262" y="144" font-size="12" font-weight="bold" fill="white">Service · type: LoadBalancer · port 25565</text>
+  <text x="262" y="168" font-size="11" fill="#1A73E8">k3s ServiceLB binds :25565 on host network interface</text>
+
+  <!-- Service → Deployment arrow -->
+  <line x1="475" y1="182" x2="475" y2="200" stroke="#5F6368" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- ── Deployment ── -->
+  <rect x="246" y="200" width="220" height="54" rx="7" fill="white" stroke="#34A853" stroke-width="1.5"/>
+  <rect x="246" y="200" width="220" height="24" rx="7" fill="#34A853"/>
+  <rect x="246" y="212" width="220" height="12" fill="#34A853"/>
+  <text x="262" y="216" font-size="12" font-weight="bold" fill="white">Deployment</text>
+  <text x="262" y="240" font-size="11" fill="#137333">replicas: 1 · strategy: Recreate</text>
+
+  <!-- ── ConfigMap ── -->
+  <rect x="484" y="200" width="220" height="54" rx="7" fill="white" stroke="#FA7B17" stroke-width="1.5"/>
+  <rect x="484" y="200" width="220" height="24" rx="7" fill="#FA7B17"/>
+  <rect x="484" y="212" width="220" height="12" fill="#FA7B17"/>
+  <text x="500" y="216" font-size="12" font-weight="bold" fill="white">ConfigMap</text>
+  <text x="500" y="240" font-size="11" fill="#E37400">EULA · VERSION · MOTD · MEMORY</text>
+
+  <!-- Deployment → Pod and ConfigMap → Pod arrows -->
+  <line x1="356" y1="254" x2="356" y2="272" stroke="#5F6368" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="594" y1="254" x2="594" y2="272" stroke="#5F6368" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- ── Pod ── -->
+  <rect x="246" y="272" width="458" height="70" rx="7" fill="white" stroke="#3949AB" stroke-width="1.5"/>
+  <rect x="246" y="272" width="458" height="24" rx="7" fill="#3949AB"/>
+  <rect x="246" y="284" width="458" height="12" fill="#3949AB"/>
+  <text x="262" y="288" font-size="12" font-weight="bold" fill="white">Pod  (managed by Deployment)</text>
+  <text x="262" y="312" font-size="11" fill="#3949AB">init: world-restore (S3 restore if /data/world absent)</text>
+  <text x="262" y="328" font-size="11" fill="#3949AB">minecraft container · ECR image mc-1.21.4-build1 · cpu 500m–1500m · mem 2–3Gi</text>
+
+  <!-- Pod → PVC arrow -->
+  <line x1="475" y1="342" x2="475" y2="360" stroke="#C5221F" stroke-width="1.5" marker-end="url(#a-red)"/>
+  <rect x="426" y="346" width="55" height="14" rx="3" fill="#F8F9FA"/>
+  <text x="429" y="357" font-size="9" fill="#C5221F">/data mount</text>
+
+  <!-- ── PVC ── -->
+  <rect x="246" y="360" width="458" height="54" rx="7" fill="white" stroke="#C5221F" stroke-width="1.5"/>
+  <rect x="246" y="360" width="458" height="24" rx="7" fill="#C5221F"/>
+  <rect x="246" y="372" width="458" height="12" fill="#C5221F"/>
+  <text x="262" y="376" font-size="12" font-weight="bold" fill="white">PersistentVolumeClaim · minecraft-world · 5 Gi</text>
+  <text x="262" y="400" font-size="11" fill="#C5221F">storageClass: local-path  (node-local disk, survives pod deletion)</text>
+
+  <!-- PVC → CronJob spacer arrow -->
+  <line x1="475" y1="414" x2="475" y2="432" stroke="#5F6368" stroke-width="1.5" marker-end="url(#a)"/>
+  <rect x="430" y="418" width="48" height="14" rx="3" fill="#F8F9FA"/>
+  <text x="433" y="429" font-size="9" fill="#5F6368">read-only</text>
+
+  <!-- ── CronJob ── -->
+  <rect x="246" y="432" width="458" height="54" rx="7" fill="white" stroke="#007B5E" stroke-width="1.5"/>
+  <rect x="246" y="432" width="458" height="24" rx="7" fill="#007B5E"/>
+  <rect x="246" y="444" width="458" height="12" fill="#007B5E"/>
+  <text x="262" y="448" font-size="12" font-weight="bold" fill="white">CronJob · minecraft-backup · schedule: 0 * * * *</text>
+  <text x="262" y="472" font-size="11" fill="#007B5E">tar world dir → upload to S3 as world-backup.tar.gz  (runs every hour)</text>
+
+  <!-- ═══════════════════════════════════════════
+       LEFT COLUMN
+  ════════════════════════════════════════════ -->
+
+  <!-- GitHub Actions -->
+  <rect x="16" y="50" width="170" height="68" rx="8" fill="white" stroke="#7B1FA2" stroke-width="1.5"/>
+  <rect x="16" y="50" width="170" height="26" rx="8" fill="#7B1FA2"/>
+  <rect x="16" y="64"  width="170" height="12" fill="#7B1FA2"/>
+  <text x="28" y="68" font-size="12" font-weight="bold" fill="white">GitHub Actions</text>
+  <text x="28" y="90" font-size="11" fill="#6A1B9A">publish.yml</text>
+  <text x="28" y="105" font-size="10" fill="#9C27B0">push tag  mc-*</text>
+
+  <!-- Minecraft Clients -->
+  <rect x="16" y="280" width="170" height="68" rx="8" fill="white" stroke="#137333" stroke-width="1.5"/>
+  <rect x="16" y="280" width="170" height="26" rx="8" fill="#137333"/>
+  <rect x="16" y="294"  width="170" height="12" fill="#137333"/>
+  <text x="28" y="298" font-size="12" font-weight="bold" fill="white">Minecraft Clients</text>
+  <text x="28" y="320" font-size="11" fill="#137333">TCP 25565</text>
+  <text x="28" y="335" font-size="10" fill="#34A853">SG: 0.0.0.0/0 → 25565</text>
+
+  <!-- ═══════════════════════════════════════════
+       RIGHT COLUMN
+  ════════════════════════════════════════════ -->
+
+  <!-- Amazon ECR -->
+  <rect x="778" y="50" width="188" height="80" rx="8" fill="white" stroke="#E37400" stroke-width="1.5"/>
+  <rect x="778" y="50" width="188" height="26" rx="8" fill="#E37400"/>
+  <rect x="778" y="64"  width="188" height="12" fill="#E37400"/>
+  <text x="792" y="68" font-size="12" font-weight="bold" fill="white">Amazon ECR</text>
+  <text x="792" y="91" font-size="10" fill="#E37400">minecraft-server</text>
+  <text x="792" y="106" font-size="10" fill="#E37400">:mc-1.21.4-build1 (pinned)</text>
+
+  <!-- Amazon S3 -->
+  <rect x="778" y="400" width="188" height="80" rx="8" fill="white" stroke="#E37400" stroke-width="1.5"/>
+  <rect x="778" y="400" width="188" height="26" rx="8" fill="#E37400"/>
+  <rect x="778" y="414"  width="188" height="12" fill="#E37400"/>
+  <text x="792" y="418" font-size="12" font-weight="bold" fill="white">Amazon S3</text>
+  <text x="792" y="441" font-size="10" fill="#E37400">minecraft-backups-</text>
+  <text x="792" y="456" font-size="10" fill="#E37400">rosshenderson</text>
+  <text x="792" y="471" font-size="10" fill="#BF360C">world-backup.tar.gz</text>
+
+  <!-- ═══════════════════════════════════════════
+       ARROWS
+  ════════════════════════════════════════════ -->
+
+  <!-- 1. GitHub Actions → ECR  (push image) -->
+  <line x1="186" y1="80" x2="776" y2="80" stroke="#7B1FA2" stroke-width="1.8" marker-end="url(#a-purple)"/>
+  <rect x="430" y="68" width="100" height="16" rx="4" fill="white"/>
+  <text x="437" y="80" font-size="10" fill="#7B1FA2">push image</text>
+
+  <!-- 2. ECR → Pod  (image pull, dashed) -->
+  <line x1="778" y1="110" x2="706" y2="307" stroke="#E37400" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#a-orange)"/>
+  <rect x="717" y="195" width="70" height="16" rx="4" fill="white"/>
+  <text x="721" y="207" font-size="10" fill="#E37400">image pull</text>
+
+  <!-- 3. Minecraft Clients → Service (TCP 25565) -->
+  <line x1="186" y1="313" x2="244" y2="155" stroke="#137333" stroke-width="1.8" marker-end="url(#a-green)"/>
+  <rect x="184" y="220" width="70" height="16" rx="4" fill="white"/>
+  <text x="188" y="232" font-size="10" fill="#137333">TCP 25565</text>
+
+  <!-- 4. CronJob → S3  (backup, dashed teal) -->
+  <line x1="704" y1="459" x2="776" y2="440" stroke="#007B5E" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#a-teal)"/>
+  <rect x="714" y="442" width="60" height="16" rx="4" fill="white"/>
+  <text x="717" y="454" font-size="10" fill="#007B5E">backup</text>
+
+  <!-- 5. S3 → Pod  (restore on first start, dashed gray) -->
+  <path d="M 872,400 L 872,350 L 706,318" stroke="#5F6368" stroke-width="1.5" stroke-dasharray="4,4" fill="none" marker-end="url(#a)"/>
+  <rect x="800" y="335" width="68" height="16" rx="4" fill="white"/>
+  <text x="803" y="347" font-size="10" fill="#5F6368">restore *</text>
+
+  <!-- restore footnote -->
+  <text x="228" y="548" font-size="10" fill="#5F6368" font-style="italic">* init container restores world from S3 on first pod start (or after manual world deletion)</text>
+
+</svg>

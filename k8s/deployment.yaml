@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft
+  namespace: minecraft
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minecraft
+  # Recreate terminates the old pod before starting the new one.
+  # Required on single-node k3s: t3.medium can't fit two 2Gi pods simultaneously,
+  # and ReadWriteOnce PVC semantics make concurrent access undefined anyway.
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: minecraft
+    spec:
+      initContainers:
+        - name: world-restore
+          image: amazon/aws-cli:2.15.0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              if [ ! -d /data/world ]; then
+                if aws s3 ls s3://minecraft-backups-rosshenderson/minecraft/world-backup.tar.gz \
+                    --region us-east-1 2>/dev/null; then
+                  aws s3 cp s3://minecraft-backups-rosshenderson/minecraft/world-backup.tar.gz \
+                    /tmp/world-backup.tar.gz --region us-east-1
+                  tar -xzf /tmp/world-backup.tar.gz -C /data
+                  rm -f /tmp/world-backup.tar.gz
+                  echo "World restored from S3"
+                else
+                  echo "No S3 backup found; Minecraft will generate a fresh world"
+                fi
+              else
+                echo "World directory already present; skipping restore"
+              fi
+          volumeMounts:
+            - name: world-data
+              mountPath: /data
+
+      containers:
+        - name: minecraft
+          image: 232259924361.dkr.ecr.us-east-1.amazonaws.com/minecraft-server:mc-1.21.4-build1
+          ports:
+            - containerPort: 25565
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: minecraft-config
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "3Gi"
+              cpu: "1500m"
+          volumeMounts:
+            - name: world-data
+              mountPath: /data
+
+          # startupProbe gives the JVM up to 5 minutes to reach a listening state
+          # before liveness/readiness probes begin. This prevents restart loops
+          # during the slow Minecraft world-load phase.
+          startupProbe:
+            tcpSocket:
+              port: 25565
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 20
+
+          # readinessProbe gates traffic; liveness kills and restarts a hung process.
+          # Both use tcpSocket because itzg/minecraft-server exposes no HTTP endpoint.
+          # An open socket is weaker evidence than application-layer readiness, but it
+          # is the strongest signal available without a custom RCON health check.
+          readinessProbe:
+            tcpSocket:
+              port: 25565
+            periodSeconds: 10
+            failureThreshold: 3
+
+          livenessProbe:
+            tcpSocket:
+              port: 25565
+            periodSeconds: 30
+            failureThreshold: 3
+
+      volumes:
+        - name: world-data
+          persistentVolumeClaim:
+            claimName: minecraft-world

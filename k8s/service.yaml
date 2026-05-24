@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft
+  namespace: minecraft
+spec:
+  # LoadBalancer causes k3s ServiceLB (klipper-lb) to bind port 25565 directly
+  # on the EC2 host's public interface. No Ingress is needed; Minecraft uses raw
+  # TCP, not HTTP.
+  type: LoadBalancer
+  selector:
+    app: minecraft
+  ports:
+    - port: 25565
+      targetPort: 25565
+      protocol: TCP
