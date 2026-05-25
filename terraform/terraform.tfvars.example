@@ -1,0 +1,9 @@
+# Copy this to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored to avoid committing account-specific IDs.
+
+vpc_id           = "vpc-xxxxxxxxxxxxxxxxx"
+subnet_id        = "subnet-xxxxxxxxxxxxxxxxx"
+key_name         = "your-key-pair-name"
+ecr_image_uri    = "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/minecraft-server:TAG"
+s3_backup_bucket = "your-backup-bucket-name"
+student_id       = "your-student-id"
